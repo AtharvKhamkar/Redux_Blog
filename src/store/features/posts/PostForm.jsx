@@ -5,8 +5,8 @@ import { postAdded } from './PostSlice';
 
 const PostForm = () => {
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [userId, setUserId] = useState('');
+  const [body, setBody] = useState('');
+  const [userId, setUserId] = useState(0);
 
   const dispatch = useDispatch();
   const users = useSelector(selectAllUsers);
@@ -15,14 +15,14 @@ const PostForm = () => {
     e.preventDefault();
     console.log('button clicked');
 
-    dispatch(postAdded(title, content, userId));
+    dispatch(postAdded(title, body, userId));
     setTitle('');
-    setContent('');
-    setUserId('');
+    setBody('');
+    setUserId(0);
   };
 
   return (
-    <div className='flex flex-col justify-center items-center p-4 border-lg bg-slate-800 w-1/2 m-auto rounded-lg text-white border-white'>
+    <div className='flex flex-col justify-center items-center p-2 border-lg bg-slate-800 w-1/2 m-auto rounded-lg text-white border-white'>
       <form onSubmit={handlePostSubmit}>
         <div className='flex justify-between items-center px-2 py-4 text-xl'>
           <label htmlFor='title'>Title:</label>
@@ -36,14 +36,14 @@ const PostForm = () => {
           />
         </div>
         <div className='flex justify-between items-center px-2 py-4 text-xl '>
-          <label htmlFor='content'>Content:</label>
+          <label htmlFor='body'>Content:</label>
           <input
-            id='content'
+            id='body'
             type='text'
             placeholder='Content'
-            value={content}
+            value={body}
             className='text-slate-900 rounded-md py-2 text-center'
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => setBody(e.target.value)}
           />
         </div>
         <div className='flex justify-between items-center px-2 py-4 text-xl '>
@@ -51,15 +51,16 @@ const PostForm = () => {
           <select
             id='user_list'
             value={userId}
-            className='text-slate-900'
-            onChange={(e) => setUserId(e.target.value)}
+            itemType=''
+            className='text-slate-900 rounded-lg p-2'
+            onChange={(e) => setUserId(Number(e.target.value))}
           >
             {users &&
               users.map((user) => (
                 <option
                   key={user.id}
                   value={user.id}
-                  className='text-slate-900'
+                  className='text-slate-900 rounded-lg p-2'
                 >
                   {user.name}
                 </option>
