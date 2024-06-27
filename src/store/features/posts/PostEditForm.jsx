@@ -1,26 +1,52 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 import { selectAllUsers } from '../users/Userslice';
-import { postAdded } from './PostSlice';
+import { selectSinglePost, updatePost } from './PostSlice';
 
-const PostForm = () => {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [userId, setUserId] = useState(0);
+const PostEditForm = () => {
+  const { postId } = useParams();
+  const navigate = useNavigate();
+
+  const post = useSelector((state) => selectSinglePost(state, Number(postId)));
+
+  if (!post) {
+    return <p>Post not found...</p>;
+  }
+
+  const [title, setTitle] = useState(post.title);
+  const [body, setBody] = useState(post.body);
+  const [userId, setUserId] = useState(post.userId);
+  const [requestStatus, setRequestStatus] = useState('idle');
 
   const dispatch = useDispatch();
   const users = useSelector(selectAllUsers);
 
-  const handlePostSubmit = (e) => {
+  const handlePostSubmit = async (e) => {
     e.preventDefault();
-    console.log('button clicked');
+    console.log('Edited post');
 
-    dispatch(postAdded(title, body, userId));
-    setTitle('');
-    setBody('');
-    setUserId(0);
+    try {
+      setRequestStatus('pending');
+      await dispatch(
+        updatePost({
+          id: post.id,
+          title,
+          body,
+          reactions: post.reactions,
+          userId: post.userId,
+        })
+      ).unwrap();
+      setTitle('');
+      setBody('');
+      setUserId(0);
+    } catch (error) {
+      console.log(`Failed to update post`, error);
+    } finally {
+      setRequestStatus('idle');
+      navigate(`/post/${post.id}`);
+    }
   };
-
   return (
     <div className='w-full min-h-screen bg-slate-400 p-4'>
       <div className='flex flex-col justify-center items-center p-2 border-lg bg-slate-800 w-1/2 m-auto rounded-lg text-white border-white'>
@@ -53,6 +79,7 @@ const PostForm = () => {
               id='user_list'
               value={userId}
               itemType=''
+              disabled={true}
               className='text-slate-900 rounded-lg p-2 w-4/5'
               onChange={(e) => setUserId(Number(e.target.value))}
             >
@@ -73,7 +100,7 @@ const PostForm = () => {
               type='submit'
               className='w-full rounded-md text-xl font-semibold'
             >
-              Add Post
+              Edit Post
             </button>
           </div>
         </form>
@@ -82,4 +109,4 @@ const PostForm = () => {
   );
 };
 
-export default PostForm;
+export default PostEditForm;

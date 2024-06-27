@@ -15,7 +15,26 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
     return response.data
 })
 
+export const updatePost = createAsyncThunk("posts/updatePosts", async (initialPost) => {
+    const { id } = initialPost;
+   try {
+    const response = await axios.put(`${POST_URL}/${id}`, initialPost)
+    return response.data
+   } catch (error) {
+    return initialPost
+   }
+})
 
+export const deletePost = createAsyncThunk("posts/deletePosts", async (initialPost) => {
+    const { id } = initialPost;
+    try {
+        const response = await axios.delete(`${POST_URL}/${id}`, initialPost)
+        if (response?.status === 200) return initialPost;
+        return `${response?.status}: ${response.statusText}`
+    } catch (error) {
+        console.log(`Error while deleting the post ${error}`)
+    }
+})
 
 
 
@@ -76,6 +95,31 @@ export const postSlice = createSlice({
                     return post;
                 })
                 state.posts = state.posts.concat(loadedPosts);
+                
+            })
+            .addCase(updatePost.fulfilled, (state, action) => {
+                console.log(action.payload)
+                if (!action.payload?.id) {
+                    console.log("Error while updating the post")
+                    console.log(action.payload)
+                }
+                
+                const { id } = action.payload;
+                action.payload.date = new Date().toISOString()
+                const posts = state.posts.filter(post => post.id !== id)
+                state.posts = [...posts,action.payload]
+            })
+            .addCase(deletePost.fulfilled, (state, action) => {
+                console.log(action.payload.id)
+                if (!action.payload?.id) {
+                    console.log('Error while deleting the post')
+                    console.log(action.payload)
+                    return;
+                }
+                
+                const { id } = action.payload;
+                const posts = state.posts.filter(post => post.id !== id)
+                state.posts = posts
         })
     }
 })
@@ -87,5 +131,8 @@ export const selectAllPosts = state => state.posts.posts
 export const selectPostStatus = state => state.posts.status
 export const selectPostsError = state => state.posts.error
 
+export const selectSinglePost = (state, postId) => 
+    state.posts.posts.find(post => post.id === postId)
 
+    
 export default postSlice.reducer

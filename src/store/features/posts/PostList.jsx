@@ -1,3 +1,4 @@
+import { nanoid } from '@reduxjs/toolkit';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PostExerts from './PostExerts';
@@ -24,7 +25,12 @@ const PostList = () => {
   if (status === 'pending') {
     renderedPosts = <p>Loading...</p>;
   } else if (status === 'succeeded') {
-    renderedPosts = posts.map((post) => <PostExerts post={post} />);
+    const orderedPosts = posts
+      .slice()
+      .sort((a, b) => b.date.localeCompare(a.date));
+    renderedPosts = orderedPosts.map((post, index) => (
+      <PostExerts key={nanoid()} post={post} />
+    ));
   } else if (status === 'failed') {
     renderedPosts = <p>{error}</p>;
   }
